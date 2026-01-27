@@ -19,6 +19,7 @@ jobs:
         proxy: ['proxy', 'no-proxy'] # proxy / no-proxy run different tests, keep both
         search: ['searxng'] # disabled google for now, should be fine with just Searxng
         ai: ['openai'] # AI only should be fine, as it simply adds tests, if non-AI fails, AI will fail.
+        cache: ['redis', 'valkey'] # Test both cache backends
 
         # legacy matrix:
         # engine: ["playwright", "fetch"]
@@ -28,7 +29,7 @@ jobs:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     services:
       redis:
-        image: redis
+        image: ${{ matrix.cache == 'valkey' && 'valkey/valkey:alpine' || 'redis:alpine' }}
         ports:
           - 6379:6379
       rabbitmq:
@@ -367,7 +368,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Logs (kubernetes, ${{ matrix.ai }}, ${{ matrix.search }}, ${{ matrix.engine }}, ${{ matrix.proxy }})
+          name: Logs (kubernetes, ${{ matrix.ai }}, ${{ matrix.search }}, ${{ matrix.engine }}, ${{ matrix.proxy }}, ${{ matrix.cache }})
           path: logs/logs.zip
 
   # temp disabled

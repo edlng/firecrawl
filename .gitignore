@@ -7,6 +7,8 @@ dump.rdb
 /mongo-data
 apps/js-sdk/node_modules/
 
+apps/valkey-demo/node_modules/
+
 apps/api/.env.local
 
 apps/test-suite/node_modules/
@@ -25,6 +27,7 @@ apps/playwright-service-ts/package-lock.json
 .rdb
 
 apps/js-sdk/firecrawl/dist
+apps/valkey-demo/dist/
 
 /examples/o1_web_crawler/firecrawl_env
 /examples/crm_lead_enrichment/crm_lead_enrichment_env

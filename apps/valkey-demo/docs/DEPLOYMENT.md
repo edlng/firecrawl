@@ -65,7 +65,7 @@ name: firecrawl-valkey
 
 services:
   valkey:
-    image: valkey/valkey:7-alpine
+    image: valkey/valkey:alpine
     restart: unless-stopped
     command: >
       valkey-server
@@ -109,10 +109,6 @@ services:
   playwright-service:
     image: ghcr.io/firecrawl/playwright-service:latest
     # Required for browser-based scraping
-
-  # Optional: Include valkey-demo with --profile demo
-  valkey-demo:
-    # ... runs on port 3030
 
 volumes:
   valkey-data:
@@ -180,44 +176,63 @@ See [examples/kubernetes/cluster-install/README.md](../../../examples/kubernetes
 
 ## Self-Hosted Valkey
 
-### Ubuntu/Debian
+The simplest way to run Firecrawl with Valkey is to swap the Redis image in the existing `docker-compose.yaml`.
+
+### Step 1: Clone Firecrawl
 
 ```bash
-# Install dependencies
-sudo apt update
-sudo apt install -y build-essential tcl wget
-
-# Download and build Valkey
-wget https://github.com/valkey-io/valkey/archive/refs/tags/7.2.5.tar.gz
-tar xzf 7.2.5.tar.gz
-cd valkey-7.2.5
-make
-sudo make install
-
-# Create config directory
-sudo mkdir -p /etc/valkey
-sudo cp valkey.conf /etc/valkey/
-
-# Edit config
-sudo nano /etc/valkey/valkey.conf
+git clone https://github.com/mendableai/firecrawl.git
+cd firecrawl
 ```
 
-**Recommended config changes:**
+### Step 2: Switch to Valkey
 
-```conf
-# /etc/valkey/valkey.conf
-bind 0.0.0.0
-port 6379
-requirepass your-secure-password
-daemonize yes
-pidfile /var/run/valkey.pid
-logfile /var/log/valkey/valkey.log
-dir /var/lib/valkey
-appendonly yes
-appendfsync everysec
-maxmemory 2gb
-maxmemory-policy allkeys-lru
+Edit `docker-compose.yaml` and change the redis service image:
+
+```yaml
+redis:
+  # image: redis:alpine
+  image: valkey/valkey:alpine
 ```
+
+Or use sed to do it automatically:
+
+```bash
+sed -i 's|image: redis:alpine|# image: redis:alpine|g' docker-compose.yaml
+sed -i 's|# image: valkey/valkey:alpine|image: valkey/valkey:alpine|g' docker-compose.yaml
+```
+
+### Step 3: Start Firecrawl
+
+```bash
+docker compose up -d
+```
+
+### Step 4: Verify Valkey is Running
+
+```bash
+# Check that Valkey is being used (should show valkey_version)
+docker compose exec redis redis-cli INFO server | grep -E "valkey_version"
+
+# Test the API
+curl -s http://localhost:3002/v1/scrape \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer fc-test-key" \
+  -d '{"url": "https://example.com"}'
+```
+
+### Troubleshooting
+
+If services fail to start, check the logs:
+
+```bash
+docker compose logs redis
+docker compose logs api
+```
+
+Common issues:
+- **Port 6379 in use**: Stop any existing Redis/Valkey instances
+- **API not responding**: Wait 30-60 seconds for initialization, or check `docker compose logs api`
 
 ---
 

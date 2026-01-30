@@ -5,7 +5,7 @@ name: firecrawl-valkey
 
 services:
   valkey:
-    image: valkey/valkey:7-alpine
+    image: valkey/valkey:alpine
     restart: unless-stopped
     command: >
       valkey-server
@@ -92,26 +92,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-
-  # Optional: Valkey demo app
-  valkey-demo:
-    build:
-      context: ..
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    environment:
-      FIRECRAWL_API_URL: http://api:3002
-      VALKEY_URL: redis://:${VALKEY_PASSWORD:-changeme}@valkey:6379
-      PORT: 3030
-    depends_on:
-      - api
-      - valkey
-    networks:
-      - backend
-    ports:
-      - "${DEMO_PORT:-3030}:3030"
-    profiles:
-      - demo
 
 volumes:
   valkey-data:

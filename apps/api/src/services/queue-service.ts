@@ -17,6 +17,7 @@ export function getRedisConnection(): IORedis {
   if (!redisConnection) {
     redisConnection = new IORedis(config.REDIS_URL!, {
       maxRetriesPerRequest: null,
+      connectionName: "firecrawl_queue_client",
     });
     redisConnection.on("connect", () => logger.info("Redis connected"));
     redisConnection.on("reconnecting", () => logger.warn("Redis reconnecting"));

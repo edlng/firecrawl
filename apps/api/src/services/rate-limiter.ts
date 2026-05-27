@@ -6,6 +6,7 @@ import type { AuthCreditUsageChunk } from "../controllers/v1/types";
 
 export const redisRateLimitClient = new Redis(config.REDIS_RATE_LIMIT_URL!, {
   enableAutoPipelining: true,
+  connectionName: "firecrawl_rate_limit_client",
 });
 
 const createRateLimiter = (keyPrefix, points) =>
